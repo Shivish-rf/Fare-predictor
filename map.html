@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+        }
+        #map {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            width: 100%;
+            background-color: #f0f0f0;
+        }
+        .info {
+            padding: 6px 8px;
+            background: white;
+            box-shadow: 0 0 15px rgba(0,0,0,0.2);
+            border-radius: 5px;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div id="map"></div>
+    <script>
+        // Function to initialize map with route data
+        function initializeMap(data) {
+            // Initialize map
+            const map = L.map('map').setView([data.center_lat, data.center_lon], 13);
+            
+            // Add OpenStreetMap tiles
+            L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+                attribution: '&copy; OpenStreetMap contributors',
+                maxZoom: 19
+            }).addTo(map);
+            
+            // Pickup marker (Green)
+            L.marker([data.lat1, data.lon1], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-green.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                })
+            })
+            .bindPopup(`<b>Pickup</b><br>${data.pickup_place}`)
+            .openPopup()
+            .addTo(map);
+            
+            // Drop marker (Red)
+            L.marker([data.lat2, data.lon2], {
+                icon: L.icon({
+                    iconUrl: 'https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png',
+                    shadowUrl: 'https://cdnjs.cloudflare.com/ajax/libs/leaflet/0.7.7/images/marker-shadow.png',
+                    iconSize: [25, 41],
+                    iconAnchor: [12, 41],
+                    popupAnchor: [1, -34],
+                    shadowSize: [41, 41]
+                })
+            })
+            .bindPopup(`<b>Drop</b><br>${data.drop_place}`)
+            .addTo(map);
+            
+            // Route polyline (Blue)
+            const route = data.route;
+            L.polyline(route, {
+                color: 'blue',
+                weight: 5,
+                opacity: 0.8,
+                dashArray: '5, 5'
+            })
+            .bindPopup(`Distance: ${data.distance.toFixed(2)} km`)
+            .addTo(map);
+            
+            // Fit bounds to show entire route
+            const bounds = L.latLngBounds(route);
+            map.fitBounds(bounds, { padding: [50, 50] });
+        }
+        
+        // Check if data is passed from Streamlit
+        if (window.mapData) {
+            initializeMap(window.mapData);
+        }
+    </script>
+</body>
+</html>
